@@ -1,0 +1,42 @@
+# ── Environment secrets (NEVER commit these) ─────────────────────────────────
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+*.env
+
+# ── Node dependencies ─────────────────────────────────────────────────────────
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# ── Build / dist outputs ──────────────────────────────────────────────────────
+client/dist/
+dist/
+build/
+
+# ── Vite cache files ──────────────────────────────────────────────────────────
+client/vite.config.js.timestamp-*.mjs
+*.timestamp-*.mjs
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── OS / IDE files ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+.idea/
+
+# ── Package manager lock files (keep these) ───────────────────────────────────
+# package-lock.json — keep
+# yarn.lock — keep
+
+# ── Uploads / temporary ───────────────────────────────────────────────────────
+uploads/
+tmp/
