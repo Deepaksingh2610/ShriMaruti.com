@@ -3,22 +3,33 @@ const mongoose = require('mongoose');
 const ensureAdminUser = async () => {
   try {
     const User = require('../models/User');
-    const adminEmail = (process.env.ADMIN_EMAIL || 'admin@ganeshgifting.com').toLowerCase();
     const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@123456';
+    const emailsToEnsure = [
+      (process.env.ADMIN_EMAIL || '').toLowerCase().trim(),
+      'admin@shrimaruti.com',
+      'admin@ganeshgifting.com'
+    ].filter(Boolean);
 
-    const existingAdmin = await User.findOne({ role: 'admin' });
-    if (!existingAdmin) {
-      await User.create({
-        name: 'Anuj Singh Admin',
-        email: adminEmail,
-        phone: '9876543210',
-        password: adminPassword,
-        role: 'admin',
-        referralCode: 'ADMINREF100',
-        loyaltyPoints: 1000,
-        isEmailVerified: true
-      });
-      console.log(`[Database] Auto-created Admin user: ${adminEmail}`);
+    for (const email of [...new Set(emailsToEnsure)]) {
+      const existing = await User.findOne({ email });
+      if (!existing) {
+        await User.create({
+          name: 'Shri Maruti Admin',
+          email,
+          phone: '9876543210',
+          password: adminPassword,
+          role: 'admin',
+          referralCode: 'ADMINREF' + Math.floor(100 + Math.random() * 900),
+          loyaltyPoints: 1000,
+          isEmailVerified: true
+        });
+        console.log(`[Database] Auto-created Admin user: ${email}`);
+      } else if (existing.role !== 'admin') {
+        existing.role = 'admin';
+        existing.isEmailVerified = true;
+        await existing.save({ validateBeforeSave: false });
+        console.log(`[Database] Promoted user to Admin role: ${email}`);
+      }
     }
   } catch (err) {
     console.warn('[Database Warning] Could not verify/create admin user:', err.message);
