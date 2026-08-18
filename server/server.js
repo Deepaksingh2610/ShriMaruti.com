@@ -97,6 +97,38 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Root / Home endpoint — Serves Frontend if dist exists, otherwise returns API Welcome status
+const path = require('path');
+const fs = require('fs');
+const clientDistPath = path.join(__dirname, '../client/dist');
+
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path === '/health' || req.path === '/sitemap.xml' || req.path === '/robots.txt') {
+      return next();
+    }
+    res.sendFile(path.join(clientDistPath, 'index.html'));
+  });
+} else {
+  app.get('/', (req, res) => {
+    res.json({
+      success: true,
+      service: 'ShriMaruti API Server',
+      status: 'Live & Operational 🚀',
+      message: 'Welcome to ShriMaruti.com Backend REST API',
+      health: '/health',
+      apiEndpoints: {
+        products: '/api/products',
+        categories: '/api/categories',
+        banners: '/api/content/banners',
+        companySettings: '/api/content/company-settings'
+      },
+      frontendNote: 'Frontend React UI is deployed as a Render Static Site or build client/dist to serve monolithically.'
+    });
+  });
+}
+
 // Centralized Error Handling Middleware
 app.use(errorHandler);
 
