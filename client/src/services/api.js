@@ -1,7 +1,18 @@
 import axios from 'axios';
 
+const getBaseURL = () => {
+  const envUrl = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL;
+  if (!envUrl) return '/api';
+  
+  let trimmed = envUrl.trim().replace(/\/+$/, ''); // Remove trailing slashes
+  if (!trimmed.endsWith('/api')) {
+    trimmed += '/api';
+  }
+  return trimmed;
+};
+
 const API = axios.create({
-  baseURL: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api',
+  baseURL: getBaseURL(),
   withCredentials: true
 });
 
@@ -22,7 +33,8 @@ API.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const res = await axios.post('/api/auth/refresh-token', {}, { withCredentials: true });
+        const refreshEndpoint = `${getBaseURL()}/auth/refresh-token`;
+        const res = await axios.post(refreshEndpoint, {}, { withCredentials: true });
         if (res.data.token) {
           localStorage.setItem('gg_token', res.data.token);
           originalRequest.headers.Authorization = `Bearer ${res.data.token}`;

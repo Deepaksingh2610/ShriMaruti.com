@@ -15,25 +15,32 @@ const { cacheStore } = require('./utils/cache');
 // Initialize Express App
 const app = express();
 
-// ── CORS ─── allow only whitelisted origins ─────────────────────────────────
-const ALLOWED_ORIGINS = [
-  // Production frontend on Render
-  process.env.CLIENT_URL,
+// ── CORS ─── allow whitelisted origins & onrender.com domains ────────────────
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
   // Local development
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://localhost:5175',
-  'http://localhost:3000',
-].filter(Boolean); // Remove any undefined entries
+  if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) return true;
+  // All Render domains (both static sites and backend services on Render)
+  if (origin.endsWith('.onrender.com')) return true;
+  // Explicitly configured CLIENT_URL (with or without trailing slash)
+  if (process.env.CLIENT_URL) {
+    const cleanClientUrl = process.env.CLIENT_URL.trim().replace(/\/+$/, '');
+    const cleanOrigin = origin.trim().replace(/\/+$/, '');
+    if (cleanClientUrl === cleanOrigin) return true;
+  }
+  return false;
+};
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, Postman, server-to-server)
-    if (!origin) return callback(null, true);
-    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-    // In development mode, allow all origins for convenience
-    if (process.env.NODE_ENV !== 'production') return callback(null, true);
+    if (isAllowedOrigin(origin)) {
+      return callback(null, true);
+    }
+    // In non-production environments, allow all origins
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
     callback(new Error(`CORS policy: Origin '${origin}' is not allowed`));
   },
   credentials: true
