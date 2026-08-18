@@ -29,8 +29,17 @@ export default defineConfig(({ mode }) => {
     build: {
       // Sourcemaps off in production to reduce bundle size
       sourcemap: false,
-      // Chunk warning threshold
-      chunkSizeWarningLimit: 1000,
+      chunkSizeWarningLimit: 1500,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-icons': ['lucide-react', 'react-icons'],
+            'vendor-query': ['@tanstack/react-query'],
+            'vendor-ui': ['framer-motion', 'swiper'],
+          }
+        }
+      }
     }
   };
 });
